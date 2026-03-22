@@ -2,105 +2,81 @@ const express = require("express");
 const cors = require("cors");
 const supabase = require("./db.js");
 const tideService = require("./tide-service.js");
+const weatherService = require("./weather-service.js");
+const cacheManager = require("./cache-manager.js");
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 8080;
 const niwaApiKey = process.env.NIWA_API_KEY;
+const weatherApiKey = process.env.METEOSOURCE_API_KEY;
+let cacheRefreshInterval = null;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// Root route
+// ===== Helper Functions =====
+
+// Handle Supabase query results
+const handleQuery = (error, data) => {
+  if (error) throw error;
+  return data;
+};
+
+// Standard response format
+const respondSuccess = (res, data, statusCode = 200) => {
+  res.status(statusCode).json({ success: true, data });
+};
+
+const respondError = (res, error, statusCode = 500) => {
+  res
+    .status(statusCode)
+    .json({ success: false, error: error.message || error });
+};
+
+// ===== Basic Routes ====="
+
 app.get("/", (req, res) => {
-  res.json({
+  respondSuccess(res, {
     message: "SmartDive backend running",
     timestamp: new Date().toISOString(),
     version: "1.0.0",
   });
 });
 
-// Database health check
-app.get("/health/db", async (req, res) => {
-  try {
-    // Use Supabase auth to check connection
-    const { data, error } = await supabase.auth.getSession();
-    // Connection is normal even without session
-    res.json({
-      status: "healthy",
-      database: "connected",
-      timestamp: new Date().toISOString(),
-      connection: "supabase-api",
-    });
-  } catch (err) {
-    res.status(500).json({
-      status: "unhealthy",
-      database: "disconnected",
-      error: err.message,
-    });
-  }
-});
-
-// API health check
 app.get("/health", (req, res) => {
-  res.json({
+  respondSuccess(res, {
     status: "healthy",
     service: "SmartDive Backend",
     uptime: process.uptime(),
-    timestamp: new Date().toISOString(),
   });
 });
 
-// Get all dive spots
+// ===== Dive Spots API =====
+
+// Get all dive spots or filter by difficulty
 app.get("/api/dive-spots", async (req, res) => {
   try {
-    const { data, error } = await supabase
-      .from("dive_spots")
-      .select("*")
-      .order("created_at", { ascending: false });
+    const { difficulty } = req.query;
+    let query = supabase.from("dive_spots").select("*");
 
-    if (error) throw error;
+    // Filter by difficulty if provided
+    if (difficulty) {
+      query = query.eq("difficulty_level", difficulty);
+    }
 
-    res.json({
-      success: true,
-      data: data,
-      count: data.length,
+    const { data, error } = await query.order("created_at", {
+      ascending: false,
     });
+    const result = handleQuery(error, data);
+
+    respondSuccess(res, { spots: result, count: result.length });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
+    respondError(res, err);
   }
 });
 
-// Get dive spots by difficulty
-app.get("/api/dive-spots/difficulty/:level", async (req, res) => {
-  try {
-    const { level } = req.params;
-    const { data, error } = await supabase
-      .from("dive_spots")
-      .select("*")
-      .eq("difficulty_level", level)
-      .order("created_at", { ascending: false });
-
-    if (error) throw error;
-
-    res.json({
-      success: true,
-      data: data,
-      count: data.length,
-      difficulty: level,
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
-  }
-});
-
-// Get single dive spot by ID
+// Get single dive spot
 app.get("/api/dive-spots/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -110,211 +86,120 @@ app.get("/api/dive-spots/:id", async (req, res) => {
       .eq("id", id)
       .single();
 
+    const result = handleQuery(error, data);
+    respondSuccess(res, result);
+  } catch (err) {
+    respondError(res, err, error?.code === "PGRST116" ? 404 : 500);
+  }
+});
+
+// ===== Combined API =====
+
+// Get tide + weather data (combined)
+app.get("/api/conditions", async (req, res) => {
+  try {
+    let lat, long, spotId;
+    const { lat: queryLat, long: queryLong, spotId: querySpotId } = req.query;
+
+    // Get coordinates
+    if (querySpotId) {
+      const { data: spot, error } = await supabase
+        .from("dive_spots")
+        .select("id, latitude, longitude")
+        .eq("id", querySpotId)
+        .single();
+
+      if (error) throw error;
+      lat = spot.latitude;
+      long = spot.longitude;
+      spotId = spot.id;
+    } else if (queryLat && queryLong) {
+      lat = parseFloat(queryLat);
+      long = parseFloat(queryLong);
+    } else {
+      return respondError(res, "Requires spotId or lat/long parameters", 400);
+    }
+
+    // Check API keys
+    if (!niwaApiKey || !weatherApiKey) {
+      return respondError(res, "API keys not configured", 500);
+    }
+
+    // Fetch tide and weather data in parallel
+    const [tideData, weatherData] = await Promise.all([
+      tideService.getTideForecast(lat, long, niwaApiKey),
+      weatherService.getWeather(lat, long, weatherApiKey),
+    ]);
+
+    // Auto-save to cache
+    if (spotId) {
+      await supabase.from("weather_tide_cache").insert({
+        dive_spot_id: spotId,
+        latitude: lat,
+        longitude: long,
+        tide_data: tideData,
+        weather_data: weatherData,
+        expires_at: new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString(),
+      });
+    }
+
+    respondSuccess(res, {
+      location: { latitude: lat, longitude: long },
+      tide: tideData,
+      weather: weatherData,
+      cached_time: new Date().toISOString(),
+    });
+  } catch (err) {
+    respondError(res, err);
+  }
+});
+
+// ===== Cache Management Endpoints (Admin) =====
+
+// Manually refresh all cache
+app.post("/api/admin/cache/refresh-all", async (req, res) => {
+  try {
+    if (!niwaApiKey || !weatherApiKey) {
+      return respondError(res, "API keys not configured", 500);
+    }
+
+    await cacheManager.refreshAllDiveSpots(niwaApiKey, weatherApiKey);
+    respondSuccess(res, { message: "Cache refreshed successfully" });
+  } catch (err) {
+    respondError(res, err);
+  }
+});
+
+// Get cache info
+app.get("/api/admin/cache/info", async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("weather_tide_cache")
+      .select("dive_spot_id, expires_at")
+      .order("expires_at", { ascending: false });
+
     if (error) throw error;
 
-    res.json({
-      success: true,
-      data: data,
+    respondSuccess(res, {
+      cache_count: data.length,
+      caches: data,
+      last_refresh: data[0]?.expires_at || null,
     });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
+    respondError(res, err);
   }
 });
 
-// ===== TIDE API ENDPOINTS =====
+// ===== Server Startup =====
 
-// Get tide forecast for a location
-app.get("/api/tide/forecast", async (req, res) => {
-  try {
-    const { lat, long } = req.query;
+app.listen(port, () => {
+  console.log(`✓ Server running at http://localhost:${port}`);
 
-    if (!lat || !long) {
-      return res.status(400).json({
-        success: false,
-        error: "Missing required parameters: lat and long",
-      });
-    }
-
-    if (!niwaApiKey) {
-      return res.status(500).json({
-        success: false,
-        error: "NIWA API key not configured",
-      });
-    }
-
-    const tideData = await tideService.getTideForecast(
-      parseFloat(lat),
-      parseFloat(long),
+  // Start daily cache refresh
+  if (niwaApiKey && weatherApiKey) {
+    cacheRefreshInterval = cacheManager.startDailyRefresh(
       niwaApiKey,
+      weatherApiKey,
     );
-
-    res.json({
-      success: true,
-      data: tideData,
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
   }
-});
-
-// Get tide forecast for a dive spot by ID
-app.get("/api/tide/dive-spot/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    if (!niwaApiKey) {
-      return res.status(500).json({
-        success: false,
-        error: "NIWA API key not configured",
-      });
-    }
-
-    // Get dive spot location
-    const { data: diveSpot, error: spotError } = await supabase
-      .from("dive_spots")
-      .select("*")
-      .eq("id", id)
-      .single();
-
-    if (spotError) throw spotError;
-
-    if (!diveSpot) {
-      return res.status(404).json({
-        success: false,
-        error: "Dive spot not found",
-      });
-    }
-
-    // Get tide forecast for that location
-    const tideData = await tideService.getTideForecast(
-      diveSpot.latitude,
-      diveSpot.longitude,
-      niwaApiKey,
-    );
-
-    res.json({
-      success: true,
-      diveSpot: {
-        id: diveSpot.id,
-        name: diveSpot.name,
-        latitude: diveSpot.latitude,
-        longitude: diveSpot.longitude,
-      },
-      tideData: tideData,
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
-  }
-});
-
-// Get tide chart URL for a location
-app.get("/api/tide/chart", (req, res) => {
-  try {
-    const { lat, long, format } = req.query;
-
-    if (!lat || !long) {
-      return res.status(400).json({
-        success: false,
-        error: "Missing required parameters: lat and long",
-      });
-    }
-
-    if (!niwaApiKey) {
-      return res.status(500).json({
-        success: false,
-        error: "NIWA API key not configured",
-      });
-    }
-
-    const chartUrl = tideService.getTideChartUrl(
-      parseFloat(lat),
-      parseFloat(long),
-      format || "svg",
-      niwaApiKey,
-    );
-
-    res.json({
-      success: true,
-      url: chartUrl,
-      format: format || "svg",
-    });
-  } catch (err) {
-    res.status(400).json({
-      success: false,
-      error: err.message,
-    });
-  }
-});
-
-// Cache management endpoints
-app.get("/api/tide/cache/stats", (req, res) => {
-  try {
-    const stats = tideService.getCacheStats();
-    res.json({
-      success: true,
-      cache: stats,
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
-  }
-});
-
-// Clear tide cache for specific location or all
-app.post("/api/tide/cache/clear", (req, res) => {
-  try {
-    const { lat, long } = req.body;
-
-    if (lat !== undefined && long !== undefined) {
-      tideService.clearCache(parseFloat(lat), parseFloat(long));
-      res.json({
-        success: true,
-        message: `Cache cleared for location ${lat},${long}`,
-      });
-    } else {
-      tideService.clearCache();
-      res.json({
-        success: true,
-        message: "All cache cleared",
-      });
-    }
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
-  }
-});
-
-const server = app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
-  console.log(`Health check: http://localhost:${port}/health`);
-  console.log(`DB check: http://localhost:${port}/health/db`);
-});
-
-// Error handling
-server.on("error", (err) => {
-  console.error("Server error:", err);
-  process.exit(1);
-});
-
-process.on("uncaughtException", (err) => {
-  console.error("Uncaught Exception:", err);
-  process.exit(1);
-});
-
-process.on("unhandledRejection", (reason, promise) => {
-  console.error("Unhandled Rejection at:", promise, "reason:", reason);
-  process.exit(1);
 });

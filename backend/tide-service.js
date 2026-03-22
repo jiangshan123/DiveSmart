@@ -35,7 +35,6 @@ async function getTideForecast(lat, long, apiKey) {
   if (tideCache.has(cacheKey)) {
     const cached = tideCache.get(cacheKey);
     if (isCacheValid(cached.timestamp)) {
-      console.log(`[Tide Cache] Hit for ${cacheKey}`);
       return cached.data;
     } else {
       // Clear expired cache
@@ -44,15 +43,15 @@ async function getTideForecast(lat, long, apiKey) {
   }
 
   try {
-    console.log(`[Tide API] Fetching data for lat=${lat}, long=${long}`);
-
     const response = await axios.get(`${NIWA_API_BASE}/data`, {
       params: {
         lat: lat,
         long: long,
-        apikey: apiKey,
       },
-      timeout: 10000, // 10 second timeout
+      headers: {
+        "x-apikey": apiKey,
+      },
+      timeout: 10000,
     });
 
     // Cache the response
@@ -63,7 +62,7 @@ async function getTideForecast(lat, long, apiKey) {
 
     return response.data;
   } catch (error) {
-    console.error(`[Tide API] Error fetching tide data:`, error.message);
+    console.error(`[Tide] 获取失败:`, error.message);
 
     if (error.response?.status === 401) {
       throw new Error("Invalid NIWA API key");

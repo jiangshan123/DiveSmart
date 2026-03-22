@@ -1,0 +1,6 @@
+nohup: ignoring input
+[dotenv@17.3.1] injecting env (11) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+Server running on http://localhost:3000
+Health check: http://localhost:3000/health
+DB check: http://localhost:3000/health/db
+[Tide API] Fetching data for lat=-36.1, long=174.1
