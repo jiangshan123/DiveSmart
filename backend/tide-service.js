@@ -43,35 +43,39 @@ async function getTideForecast(lat, long, apiKey) {
   }
 
   try {
-    const response = await axios.get(`${NIWA_API_BASE}/data`, {
-      params: {
-        lat: lat,
-        long: long,
-      },
-      headers: {
-        "x-apikey": apiKey,
-      },
-      timeout: 10000,
-    });
+    // 暂时返回模拟数据（NIWA API 需要稍后配置）
+    const mockData = {
+      region: "New Zealand",
+      date: new Date().toISOString().split("T")[0],
+      forecasts: [
+        {
+          time: "06:00",
+          prediction: 1.2,
+          status: "High",
+        },
+        {
+          time: "12:00",
+          prediction: -0.5,
+          status: "Low",
+        },
+        {
+          time: "18:00",
+          prediction: 1.5,
+          status: "High",
+        },
+      ],
+      source: "Mock Data",
+    };
 
     // Cache the response
     tideCache.set(cacheKey, {
-      data: response.data,
+      data: mockData,
       timestamp: Date.now(),
     });
 
-    return response.data;
+    return mockData;
   } catch (error) {
     console.error(`[Tide] 获取失败:`, error.message);
-
-    if (error.response?.status === 401) {
-      throw new Error("Invalid NIWA API key");
-    } else if (error.response?.status === 429) {
-      throw new Error("NIWA API rate limit exceeded");
-    } else if (error.response?.status === 400) {
-      throw new Error("Invalid coordinates for tide forecast");
-    }
-
     throw new Error(`Failed to fetch tide data: ${error.message}`);
   }
 }

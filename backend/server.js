@@ -89,7 +89,7 @@ app.get("/api/dive-spots/:id", async (req, res) => {
     const result = handleQuery(error, data);
     respondSuccess(res, result);
   } catch (err) {
-    respondError(res, err, error?.code === "PGRST116" ? 404 : 500);
+    respondError(res, err, err?.code === "PGRST116" ? 404 : 500);
   }
 });
 
