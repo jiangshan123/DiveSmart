@@ -37,6 +37,19 @@ interface ConditionsData {
       cloud_cover?: number;
     };
   };
+  visibility?: {
+    visibility_meters: number;
+    level: string;
+    color: string;
+    rating: number;
+    recommendation: string;
+    factors?: {
+      wind_impact: number;
+      cloud_impact: number;
+      humidity_impact: number;
+      tide_impact: number;
+    };
+  };
   cached_time: string;
 }
 
@@ -195,6 +208,36 @@ export function DiveSpotDetail() {
                     <p style={{ margin: '0 0 5px 0', color: '#999', fontSize: '12px' }}>Cloud Cover</p>
                     <p style={{ margin: 0, fontSize: '14px', color: '#333' }}>{conditions.weather.current.cloud_cover}%</p>
                   </div>
+                )}
+                {conditions.visibility && (
+                  <>
+                    <div style={{ gridColumn: '1 / -1', paddingTop: '10px', borderTop: '1px solid #eee' }}>
+                      <p style={{ margin: '0 0 8px 0', color: '#999', fontSize: '12px', fontWeight: '600' }}>UNDERWATER VISIBILITY</p>
+                    </div>
+                    <div>
+                      <p style={{ margin: '0 0 5px 0', color: '#999', fontSize: '12px' }}>Visibility</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <p style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: conditions.visibility.color }}>
+                          {conditions.visibility.visibility_meters}m
+                        </p>
+                        <p style={{ margin: 0, fontSize: '12px', color: conditions.visibility.color }}>
+                          {conditions.visibility.level}
+                        </p>
+                      </div>
+                    </div>
+                    <div>
+                      <p style={{ margin: '0 0 5px 0', color: '#999', fontSize: '12px' }}>Rating</p>
+                      <p style={{ margin: 0, fontSize: '16px', color: conditions.visibility.color }}>
+                        {'★'.repeat(conditions.visibility.rating)}{'☆'.repeat(5 - conditions.visibility.rating)}
+                      </p>
+                    </div>
+                    <div style={{ gridColumn: '1 / -1' }}>
+                      <p style={{ margin: '0 0 5px 0', color: '#999', fontSize: '12px' }}>Recommendation</p>
+                      <p style={{ margin: 0, fontSize: '13px', color: '#666', lineHeight: '1.4' }}>
+                        {conditions.visibility.recommendation}
+                      </p>
+                    </div>
+                  </>
                 )}
               </div>
             </div>

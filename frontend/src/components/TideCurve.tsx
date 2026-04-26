@@ -1,5 +1,5 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 interface TideValue {
   time: string;
@@ -101,6 +101,27 @@ export function TideCurve({ data }: TideCurveProps) {
     return null;
   };
 
+  // Initialize with current time tide data on load
+  useEffect(() => {
+    if (processedData.length === 0) return;
+    
+    const nowTime = Date.now();
+    const value = interpolateTideValue(nowTime) || 0;
+    const now = new Date();
+    
+    setCursorData({
+      time: now.toLocaleString('en-US', {
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+      value: value,
+      pixelX: 0,
+      pixelY: 0,
+    });
+  }, [processedData.length]);
+
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!chartWrapperRef.current) return;
 
@@ -151,7 +172,22 @@ export function TideCurve({ data }: TideCurveProps) {
   };
 
   const handleMouseLeave = () => {
-    setCursorData(null);
+    // Restore to current time when mouse leaves
+    const nowTime = Date.now();
+    const value = interpolateTideValue(nowTime) || 0;
+    const now = new Date();
+    
+    setCursorData({
+      time: now.toLocaleString('en-US', {
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+      value: value,
+      pixelX: 0,
+      pixelY: 0,
+    });
   };
 
   const scrollToNow = () => {

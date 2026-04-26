@@ -17,8 +17,44 @@ function getCacheKey(lat, long) {
 }
 
 /**
+ * Generate mock tide data for development/fallback
+ * Simulates realistic tidal patterns
+ * @param {number} lat - Latitude
+ * @param {number} long - Longitude
+ * @returns {Object} Mock tide forecast data
+ */
+function generateMockTideData(lat, long) {
+  const now = new Date();
+  const values = [];
+
+  // Generate 48 hours of tide data (2 tidal cycles)
+  for (let i = -24; i <= 24; i++) {
+    const time = new Date(now.getTime() + i * 60 * 60 * 1000);
+    // Realistic tide amplitude: ~1.2m, semi-diurnal pattern
+    const value = 1.5 + 1.2 * Math.sin((i * Math.PI) / 12.42);
+    values.push({
+      time: time.toISOString(),
+      value: parseFloat(value.toFixed(2)),
+    });
+  }
+
+  return {
+    metadata: {
+      latitude: lat,
+      longitude: long,
+      datum: "Chart Datum",
+      start: now.toISOString(),
+      days: 2,
+      height: "metres",
+    },
+    values: values,
+    _source: "mock", // Mark as mock data
+  };
+}
+
+/**
  * Fetch tide forecast data from NIWA API
- * Includes caching to avoid excessive API calls
+ * Falls back to mock data if API fails or rate limited
  * @param {number} lat - Latitude (NZGD1949)
  * @param {number} long - Longitude (NZGD1949)
  * @param {string} apiKey - NIWA API key
@@ -26,7 +62,8 @@ function getCacheKey(lat, long) {
  */
 async function getTideForecast(lat, long, apiKey) {
   if (!apiKey) {
-    throw new Error("NIWA API key is required");
+    console.warn(`[Tide] No API key, using mock data for ${lat},${long}`);
+    return generateMockTideData(lat, long);
   }
 
   const cacheKey = getCacheKey(lat, long);
@@ -35,6 +72,7 @@ async function getTideForecast(lat, long, apiKey) {
   if (tideCache.has(cacheKey)) {
     const cached = tideCache.get(cacheKey);
     if (isCacheValid(cached.timestamp)) {
+      console.log(`[Tide] Cache HIT for ${cacheKey}`);
       return cached.data;
     } else {
       // Clear expired cache
@@ -42,41 +80,54 @@ async function getTideForecast(lat, long, apiKey) {
     }
   }
 
+  // Fetch from NIWA API
   try {
-    // 暂时返回模拟数据（NIWA API 需要稍后配置）
-    const mockData = {
-      region: "New Zealand",
-      date: new Date().toISOString().split("T")[0],
-      forecasts: [
-        {
-          time: "06:00",
-          prediction: 1.2,
-          status: "High",
-        },
-        {
-          time: "12:00",
-          prediction: -0.5,
-          status: "Low",
-        },
-        {
-          time: "18:00",
-          prediction: 1.5,
-          status: "High",
-        },
-      ],
-      source: "Mock Data",
-    };
+    console.log(`[Tide] Fetching from NIWA API for ${cacheKey}...`);
+    const response = await axios.get(`${NIWA_API_BASE}/data`, {
+      params: {
+        lat: lat,
+        long: long, // NIWA API parameter name is 'long'
+      },
+      headers: {
+        "x-apikey": apiKey,
+        "Accept-Encoding": "gzip, deflate", // Exclude Brotli (br) encoding
+      },
+      timeout: 15000,
+      decompress: true,
+    });
+
+    console.log(`[Tide] ✓ Data retrieved from NIWA API`);
 
     // Cache the response
     tideCache.set(cacheKey, {
-      data: mockData,
+      data: response.data,
       timestamp: Date.now(),
     });
 
-    return mockData;
+    return response.data;
   } catch (error) {
-    console.error(`[Tide] 获取失败:`, error.message);
-    throw new Error(`Failed to fetch tide data: ${error.message}`);
+    const status = error.response?.status;
+    const faultString = error.response?.data?.fault?.faultstring;
+    const errorMsg = faultString || error.message;
+
+    console.warn(`[Tide] API Error (${status}): ${errorMsg}`);
+
+    // If rate limited AND we have cached data, use it
+    if (status === 429 && tideCache.has(cacheKey)) {
+      const cached = tideCache.get(cacheKey);
+      console.warn(
+        `[Tide] Rate limit exceeded, using cached data (${Math.round(
+          (Date.now() - cached.timestamp) / 60000,
+        )}min old)`,
+      );
+      return cached.data;
+    }
+
+    // Fallback to mock data on any API error
+    console.warn(
+      `[Tide] API call failed, falling back to mock data for ${cacheKey}`,
+    );
+    return generateMockTideData(lat, long);
   }
 }
 

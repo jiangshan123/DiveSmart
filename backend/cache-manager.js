@@ -3,23 +3,13 @@ const tideService = require("./tide-service.js");
 const weatherService = require("./weather-service.js");
 
 /**
- * Refresh cache for all dive spots daily
- * Delete old data before update to ensure only latest data is saved
+ * Refresh cache for all dive spots
+ * Only delete old data AFTER successful refresh of all spots
+ * If refresh fails, old cache is preserved
  */
 async function refreshAllDiveSpots(niwaApiKey, weatherApiKey) {
   try {
-    // 1. Delete all old cache data
-    const { error: deleteError } = await supabase
-      .from("weather_tide_cache")
-      .delete()
-      .gt("id", "00000000-0000-0000-0000-000000000000"); // UUID > all zeros, covers all records
-
-    if (deleteError) {
-      console.error("[Cache] Delete failed:", deleteError);
-      throw deleteError;
-    }
-
-    // 2. Get all active dive spots
+    // 1. Get all active dive spots
     const { data: spots, error: spotsError } = await supabase
       .from("dive_spots")
       .select("id, name, latitude, longitude");
@@ -30,15 +20,21 @@ async function refreshAllDiveSpots(niwaApiKey, weatherApiKey) {
     }
 
     if (!spots || spots.length === 0) {
+      console.warn("[Cache] No dive spots found");
       return { total: 0, refreshed: 0, failed: 0 };
     }
 
     let refreshed = 0;
     let failed = 0;
+    const newEntries = [];
 
-    // 3. Refresh each dive spot's data (500ms delay to avoid API rate limit)
+    // 2. Fetch all new data FIRST (without deleting old cache yet)
     for (const spot of spots) {
       try {
+        console.log(
+          `[Cache] Fetching data for spot ${spot.id}: ${spot.name}...`,
+        );
+
         // Fetch tide and weather data in parallel
         const [tideData, weatherData] = await Promise.all([
           tideService.getTideForecast(
@@ -53,48 +49,73 @@ async function refreshAllDiveSpots(niwaApiKey, weatherApiKey) {
           ),
         ]);
 
-        // Save to database
-        const { error: insertError } = await supabase
-          .from("weather_tide_cache")
-          .insert({
-            dive_spot_id: spot.id,
-            latitude: spot.latitude,
-            longitude: spot.longitude,
-            tide_data: tideData,
-            weather_data: weatherData,
-            cached_at: new Date().toISOString(),
-            expires_at: new Date(
-              Date.now() + 24 * 60 * 60 * 1000,
-            ).toISOString(), // Expires after 24 hours
-          });
+        newEntries.push({
+          dive_spot_id: spot.id,
+          latitude: spot.latitude,
+          longitude: spot.longitude,
+          tide_data: tideData,
+          weather_data: weatherData,
+          cached_at: new Date().toISOString(),
+          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Expires after 24 hours
+        });
 
-        if (insertError) {
-          console.error(`[Cache] Save failed ${spot.id}:`, insertError);
-          failed++;
-        } else {
-          refreshed++;
-        }
+        refreshed++;
+        console.log(`[Cache] ✓ Spot ${spot.id} data ready`);
 
         // 500ms delay to avoid API rate limit
         await new Promise((resolve) => setTimeout(resolve, 500));
       } catch (err) {
-        console.error(`[Cache] Dive spot ${spot.id}:`, err.message);
+        console.error(`[Cache] ✗ Spot ${spot.id} failed: ${err.message}`);
         failed++;
       }
+    }
+
+    // 3. Only delete old cache if we have new data to replace it
+    if (refreshed > 0) {
+      console.log(`[Cache] Deleting old cached data...`);
+      const { error: deleteError } = await supabase
+        .from("weather_tide_cache")
+        .delete()
+        .gt("id", "00000000-0000-0000-0000-000000000000"); // UUID > all zeros, covers all records
+
+      if (deleteError) {
+        console.error("[Cache] Delete old cache failed:", deleteError);
+        throw deleteError;
+      }
+
+      // 4. Insert all new entries
+      console.log(`[Cache] Inserting ${newEntries.length} new entries...`);
+      const { error: insertError } = await supabase
+        .from("weather_tide_cache")
+        .insert(newEntries);
+
+      if (insertError) {
+        console.error("[Cache] Insert new cache failed:", insertError);
+        throw insertError;
+      }
+
+      console.log(
+        `[Cache] ✓ ${refreshed}/${spots.length} entries refreshed successfully`,
+      );
+    } else {
+      console.warn(
+        `[Cache] ⚠ All ${spots.length} spots failed to fetch, keeping old cache`,
+      );
     }
 
     const result = { total: spots.length, refreshed, failed };
     if (failed > 0) {
       console.log(
-        `[Cache] ${refreshed}/${spots.length} succeeded, ${failed} failed`,
+        `[Cache] Summary: ${refreshed}/${spots.length} succeeded, ${failed} failed. Old cache preserved.`,
       );
     } else {
-      console.log(`[Cache] ✓ ${refreshed} dive spots refreshed`);
+      console.log(`[Cache] ✓ All ${refreshed} dive spots refreshed`);
     }
 
     return result;
   } catch (error) {
     console.error("[Cache] Refresh failed:", error.message);
+    console.warn("[Cache] ⚠ Old cache has been preserved");
     throw error;
   }
 }

@@ -3,6 +3,7 @@ const cors = require("cors");
 const supabase = require("./db.js");
 const tideService = require("./tide-service.js");
 const weatherService = require("./weather-service.js");
+const visibilityService = require("./visibility-service.js");
 const cacheManager = require("./cache-manager.js");
 
 const app = express();
@@ -98,14 +99,14 @@ app.get("/api/dive-spots/:id", async (req, res) => {
 // Get tide + weather data (combined)
 app.get("/api/conditions", async (req, res) => {
   try {
-    let lat, long, spotId;
+    let lat, long, spotId, spotData;
     const { lat: queryLat, long: queryLong, spotId: querySpotId } = req.query;
 
-    // Get coordinates
+    // Get coordinates and spot data
     if (querySpotId) {
       const { data: spot, error } = await supabase
         .from("dive_spots")
-        .select("id, latitude, longitude")
+        .select("*")
         .eq("id", querySpotId)
         .single();
 
@@ -113,6 +114,7 @@ app.get("/api/conditions", async (req, res) => {
       lat = spot.latitude;
       long = spot.longitude;
       spotId = spot.id;
+      spotData = spot; // Store full spot data for visibility calculation
     } else if (queryLat && queryLong) {
       lat = parseFloat(queryLat);
       long = parseFloat(queryLong);
@@ -143,10 +145,18 @@ app.get("/api/conditions", async (req, res) => {
       });
     }
 
+    // Calculate underwater visibility prediction
+    const visibility = visibilityService.calculateVisibility(
+      weatherData,
+      tideData,
+      spotData,
+    );
+
     respondSuccess(res, {
       location: { latitude: lat, longitude: long },
       tide: tideData,
       weather: weatherData,
+      visibility: visibility,
       cached_time: new Date().toISOString(),
     });
   } catch (err) {
@@ -195,11 +205,8 @@ app.get("/api/admin/cache/info", async (req, res) => {
 app.listen(port, () => {
   console.log(`✓ Server running at http://localhost:${port}`);
 
-  // Start daily cache refresh
-  if (niwaApiKey && weatherApiKey) {
-    cacheRefreshInterval = cacheManager.startDailyRefresh(
-      niwaApiKey,
-      weatherApiKey,
-    );
-  }
+  // Manual cache refresh - use POST /api/admin/cache/refresh-all
+  console.log(
+    `💡 Tip: Use POST http://localhost:${port}/api/admin/cache/refresh-all to manually refresh cache`,
+  );
 });
