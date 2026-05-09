@@ -81,7 +81,8 @@ function calculateVisibility(weatherData, tideData, spotData) {
 
   // Factor 5: Spot facing direction vs wind direction
   // This factor is simplified - properly implemented with wind direction angle
-  const facingDirection = spot.facing_direction || null;
+  const facingDirection =
+    spot.facing_direction ?? spot.facingDirection ?? null;
   let windDirectionImpact = 0;
 
   if (
