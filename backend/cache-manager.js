@@ -1,41 +1,35 @@
-const supabase = require("./db.js");
+// cache-manager.js - DynamoDB Cache Manager
+const dvAdapter = require("./divespot-adapter");
 const tideService = require("./tide-service.js");
 const weatherService = require("./weather-service.js");
 
 /**
- * Refresh cache for all dive spots
- * Only delete old data AFTER successful refresh of all spots
- * If refresh fails, old cache is preserved
+ * Refresh weather and tide cache for all dive spots
  */
 async function refreshAllDiveSpots(niwaApiKey, weatherApiKey) {
   try {
-    // 1. Get all active dive spots
-    const { data: spots, error: spotsError } = await supabase
-      .from("dive_spots")
-      .select("id, name, latitude, longitude");
-
-    if (spotsError) {
-      console.error("[Cache] Error fetching dive spots:", spotsError);
-      throw spotsError;
-    }
+    // 1. Fetch all dive spots
+    console.log("[Cache] Fetching all dive spots...");
+    const spots = await dvAdapter.spots.getAllSpots();
 
     if (!spots || spots.length === 0) {
       console.warn("[Cache] No dive spots found");
       return { total: 0, refreshed: 0, failed: 0 };
     }
 
+    console.log(`[Cache] Found ${spots.length} dive spots\n`);
+
     let refreshed = 0;
     let failed = 0;
     const newEntries = [];
 
-    // 2. Fetch all new data FIRST (without deleting old cache yet)
+    // 2. Parallel fetch data for all spots
     for (const spot of spots) {
       try {
         console.log(
-          `[Cache] Fetching data for spot ${spot.id}: ${spot.name}...`,
+          `[Cache] Fetching data for spot #${spot.spotId}: ${spot.name}...`,
         );
 
-        // Fetch tide and weather data in parallel
         const [tideData, weatherData] = await Promise.all([
           tideService.getTideForecast(
             spot.latitude,
@@ -50,91 +44,95 @@ async function refreshAllDiveSpots(niwaApiKey, weatherApiKey) {
         ]);
 
         newEntries.push({
-          dive_spot_id: spot.id,
+          dive_spot_id: spot.spotId,
           latitude: spot.latitude,
           longitude: spot.longitude,
-          tide_data: tideData,
-          weather_data: weatherData,
-          cached_at: new Date().toISOString(),
-          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Expires after 24 hours
+          tide_data: JSON.stringify(tideData),
+          weather_data: JSON.stringify(weatherData),
+          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+          tide_source: "NIWA",
+          weather_source: "PROVIDER",
         });
 
         refreshed++;
-        console.log(`[Cache] ✓ Spot ${spot.id} data ready`);
+        console.log(`[Cache] ✓ Spot #${spot.spotId} data ready`);
 
-        // 500ms delay to avoid API rate limit
+        // 500ms delay to avoid API rate limiting
         await new Promise((resolve) => setTimeout(resolve, 500));
       } catch (err) {
-        console.error(`[Cache] ✗ Spot ${spot.id} failed: ${err.message}`);
+        console.error(`[Cache] ✗ Spot #${spot.spotId} failed: ${err.message}`);
         failed++;
       }
     }
 
-    // 3. Only delete old cache if we have new data to replace it
+    // 3. Clean expired cache
     if (refreshed > 0) {
-      console.log(`[Cache] Deleting old cached data...`);
-      const { error: deleteError } = await supabase
-        .from("weather_tide_cache")
-        .delete()
-        .gt("id", "00000000-0000-0000-0000-000000000000"); // UUID > all zeros, covers all records
+      console.log(`\n[Cache] Cleaning expired cache...`);
+      const cleanedCount = await dvAdapter.cache.cleanExpiredCache();
+      console.log(`[Cache] Cleaned ${cleanedCount} expired records`);
 
-      if (deleteError) {
-        console.error("[Cache] Delete old cache failed:", deleteError);
-        throw deleteError;
-      }
-
-      // 4. Insert all new entries
-      console.log(`[Cache] Inserting ${newEntries.length} new entries...`);
-      const { error: insertError } = await supabase
-        .from("weather_tide_cache")
-        .insert(newEntries);
-
-      if (insertError) {
-        console.error("[Cache] Insert new cache failed:", insertError);
-        throw insertError;
+      // 4. Save new cache
+      console.log(`[Cache] Saving ${newEntries.length} new cache entries...`);
+      for (const entry of newEntries) {
+        await dvAdapter.cache.saveCache(entry);
       }
 
       console.log(
-        `[Cache] ✓ ${refreshed}/${spots.length} entries refreshed successfully`,
+        `\n[Cache] ✓ ${refreshed}/${spots.length} dive spots cache refreshed`,
       );
     } else {
       console.warn(
-        `[Cache] ⚠ All ${spots.length} spots failed to fetch, keeping old cache`,
+        `[Cache] ⚠ All ${spots.length} spots failed, keeping old cache`,
       );
     }
 
     const result = { total: spots.length, refreshed, failed };
-    if (failed > 0) {
-      console.log(
-        `[Cache] Summary: ${refreshed}/${spots.length} succeeded, ${failed} failed. Old cache preserved.`,
-      );
-    } else {
-      console.log(`[Cache] ✓ All ${refreshed} dive spots refreshed`);
-    }
+    console.log(`[Cache] Summary: ${refreshed} succeeded, ${failed} failed`);
 
     return result;
   } catch (error) {
     console.error("[Cache] Refresh failed:", error.message);
-    console.warn("[Cache] ⚠ Old cache has been preserved");
+    console.warn("[Cache] ⚠ Keeping old cache");
     throw error;
   }
 }
 
 /**
- * Get cache info statistics
+ * Get cache statistics
  */
 async function getCacheInfo() {
   try {
-    const { data, error } = await supabase
-      .from("weather_tide_cache")
-      .select("*");
+    const allCache = await dvAdapter.cache.getAllCache();
 
-    if (error) throw error;
+    // Count valid and expired cache entries
+    const now = Math.floor(Date.now()); // milliseconds timestamp
+    let validCount = 0;
+    let expiredCount = 0;
+
+    for (const item of allCache) {
+      if (item.expiresAt > now) {
+        validCount++;
+      } else {
+        expiredCount++;
+      }
+    }
+
+    // Get latest cache timestamp
+    const latestCache =
+      allCache.length > 0
+        ? allCache.reduce((prev, current) =>
+            current.cachedAt > prev.cachedAt ? current : prev,
+          )
+        : null;
 
     return {
-      total_records: data?.length || 0,
-      records: data || [],
-      last_updated: data?.[0]?.cached_at || null,
+      total_records: allCache.length,
+      valid_records: validCount,
+      expired_records: expiredCount,
+      last_updated: latestCache
+        ? new Date(latestCache.cachedAt).toISOString()
+        : null,
+      records: allCache,
     };
   } catch (error) {
     console.error("[Cache] Failed to get info:", error.message);
@@ -144,25 +142,33 @@ async function getCacheInfo() {
 
 /**
  * Start daily refresh timer
- * Execute every 24 hours, run immediately on startup
+ * Executes every 24 hours, runs immediately on start
  */
 function startDailyRefresh(niwaApiKey, weatherApiKey) {
-  // Run immediately on first startup
-  refreshAllDiveSpots(niwaApiKey, weatherApiKey).catch((err) => {
-    console.error("[Cache] Initialization failed:", err);
-  });
+  // Refresh immediately on startup
+  (async () => {
+    try {
+      console.log("[Cache] Starting initial cache refresh...");
+      await refreshAllDiveSpots(niwaApiKey, weatherApiKey);
+    } catch (error) {
+      console.error("[Cache] Initial refresh failed:", error.message);
+    }
+  })();
 
-  // Execute every 24 hours (86400000 milliseconds)
-  const intervalId = setInterval(
-    () => {
-      refreshAllDiveSpots(niwaApiKey, weatherApiKey).catch((err) => {
-        console.error("[Cache] Scheduled refresh failed:", err);
-      });
+  // Then refresh every 24 hours
+  const refreshInterval = setInterval(
+    async () => {
+      try {
+        console.log("\n[Cache] Running daily scheduled refresh...");
+        await refreshAllDiveSpots(niwaApiKey, weatherApiKey);
+      } catch (error) {
+        console.error("[Cache] Scheduled refresh failed:", error.message);
+      }
     },
     24 * 60 * 60 * 1000,
-  ); // 24 hours
+  );
 
-  return intervalId;
+  return refreshInterval;
 }
 
 /**

@@ -86,6 +86,43 @@ function normalizeStringList(raw) {
   return null;
 }
 
+/**
+ * Banner paths for DynamoDB: full https URLs and/or S3 object keys (e.g. divingspotbanner/milford/01.jpg).
+ * Unsafe segments (.., //) are dropped.
+ */
+function coerceBannerListForStorage(raw) {
+  if (raw == null || !Array.isArray(raw)) return null;
+  const out = [];
+  for (const s of raw) {
+    const t = String(s).trim();
+    if (!t || t.includes("..") || t.startsWith("//")) continue;
+    out.push(t);
+  }
+  return out.length ? out : null;
+}
+
+/**
+ * API output: absolute URLs for <img src>. Keys are prefixed with DIVE_SPOT_BANNER_BASE_URL when set
+ * (no trailing slash), e.g. https://mybucket.s3.ap-southeast-2.amazonaws.com
+ */
+function resolveBannerImageUrlsForApi(raw) {
+  if (raw == null || !Array.isArray(raw)) return null;
+  const base = (process.env.DIVE_SPOT_BANNER_BASE_URL || "")
+    .trim()
+    .replace(/\/$/, "");
+  const out = [];
+  for (const s of raw) {
+    const t = String(s).trim();
+    if (!t || t.includes("..") || t.startsWith("//")) continue;
+    if (/^https?:\/\//i.test(t)) {
+      out.push(t);
+    } else if (base) {
+      out.push(`${base}/${t.replace(/^\//, "")}`);
+    }
+  }
+  return out.length ? out : null;
+}
+
 function normalizeBoatRequired(raw) {
   if (raw == null || raw === "") return null;
   const s = String(raw).toLowerCase().trim();
@@ -136,6 +173,9 @@ function toApiDiveSpot(item) {
       null,
     access_notes:
       item.access_notes ?? item.accessNotes ?? item.accessExtra ?? null,
+    banner_image_urls: resolveBannerImageUrlsForApi(
+      item.bannerImageUrls ?? item.banner_image_urls,
+    ),
     createdAt: item.createdAt,
   };
 }
@@ -196,28 +236,32 @@ const spotOps = {
   // Create dive spot
   async createSpot(spotData) {
     try {
+      const bannerUrls = coerceBannerListForStorage(spotData.banner_image_urls);
+      const item = {
+        spotId: spotData.id,
+        name: spotData.name,
+        region: spotData.region,
+        latitude: spotData.latitude,
+        longitude: spotData.longitude,
+        facingDirection: spotData.facing_direction,
+        depthMaxMeters: spotData.depth_max_meters,
+        difficultyLevel: spotData.difficulty_level,
+        description: spotData.description,
+        suitableFor: spotData.suitable_for,
+        gettingThere: spotData.getting_there,
+        parkingLocation: spotData.parking_location,
+        boatRequired: spotData.boat_required,
+        parkingToEntryWalk: spotData.parking_to_entry_walk,
+        accessNotes: spotData.access_notes,
+        createdAt: Math.floor(
+          new Date(spotData.created_at || new Date()).getTime() / 1000,
+        ),
+      };
+      if (bannerUrls) item.bannerImageUrls = bannerUrls;
+
       const command = new PutCommand({
         TableName: DIVESPOT_TABLE,
-        Item: {
-          spotId: spotData.id,
-          name: spotData.name,
-          region: spotData.region,
-          latitude: spotData.latitude,
-          longitude: spotData.longitude,
-          facingDirection: spotData.facing_direction,
-          depthMaxMeters: spotData.depth_max_meters,
-          difficultyLevel: spotData.difficulty_level,
-          description: spotData.description,
-          suitableFor: spotData.suitable_for,
-          gettingThere: spotData.getting_there,
-          parkingLocation: spotData.parking_location,
-          boatRequired: spotData.boat_required,
-          parkingToEntryWalk: spotData.parking_to_entry_walk,
-          accessNotes: spotData.access_notes,
-          createdAt: Math.floor(
-            new Date(spotData.created_at || new Date()).getTime() / 1000,
-          ),
-        },
+        Item: item,
       });
 
       await docClient.send(command);
@@ -233,16 +277,23 @@ const spotOps = {
     try {
       const updateExpressions = [];
       const expressionValues = {};
+      const expressionNames = {};
+      let i = 0;
 
       Object.keys(updates).forEach((key) => {
-        updateExpressions.push(`${key} = :${key}`);
-        expressionValues[`:${key}`] = updates[key];
+        const nk = `#u${i}`;
+        const vk = `:u${i}`;
+        expressionNames[nk] = key;
+        updateExpressions.push(`${nk} = ${vk}`);
+        expressionValues[vk] = updates[key];
+        i++;
       });
 
       const command = new UpdateCommand({
         TableName: DIVESPOT_TABLE,
         Key: { spotId: spotId },
         UpdateExpression: `SET ${updateExpressions.join(", ")}`,
+        ExpressionAttributeNames: expressionNames,
         ExpressionAttributeValues: expressionValues,
         ReturnValues: "ALL_NEW",
       });
@@ -440,4 +491,5 @@ module.exports = {
   spots: spotOps,
   cache: cacheOps,
   toApiDiveSpot,
+  coerceBannerListForStorage,
 };

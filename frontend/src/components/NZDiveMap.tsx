@@ -6,6 +6,8 @@ import 'leaflet/dist/leaflet.css';
 import axios from 'axios';
 import { Carousel } from './Carousel';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
 // Fix Leaflet icon issue
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -94,7 +96,7 @@ export function NZDiveMap() {
 
   const fetchDiveSpots = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/dive-spots');
+      const response = await axios.get(`${API_BASE}/api/dive-spots`);
       setDiveSpots(response.data.data.spots);
       setFilteredSpots(response.data.data.spots);
     } catch (error) {

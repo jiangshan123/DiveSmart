@@ -1,4 +1,7 @@
-import { type ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from './AuthContext';
+import { ChatAssistant } from './ChatAssistant';
 import './Layout.css';
 
 interface LayoutProps {
@@ -6,19 +9,103 @@ interface LayoutProps {
 }
 
 export function Layout({ children }: LayoutProps) {
+  const { isLoggedIn, user, logout, isLoading } = useAuth();
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    setShowUserMenu(false);
+  };
+
   return (
     <div className="layout-container">
       {/* Header */}
       <header className="layout-header">
+        <div className="header-bg-layer" aria-hidden="true">
+          <div
+            className="header-bg-photo header-bg-photo--1"
+            style={{
+              backgroundImage:
+                "url(https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=900&q=80&auto=format&fit=crop)",
+            }}
+          />
+          <div
+            className="header-bg-photo header-bg-photo--2"
+            style={{
+              backgroundImage:
+                "url(https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=900&q=80&auto=format&fit=crop)",
+            }}
+          />
+          <div
+            className="header-bg-photo header-bg-photo--3"
+            style={{
+              backgroundImage:
+                "url(https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=900&q=80&auto=format&fit=crop)",
+            }}
+          />
+        </div>
+        <div className="header-bg-scrim" aria-hidden="true" />
         <div className="header-content">
           <div className="logo-section">
             <div className="logo-icon">🌊</div>
             <h1 className="logo-text">SmartDive</h1>
           </div>
           <nav className="header-nav">
-            <a href="/" className="nav-link">Dive Spots</a>
+            <Link to="/" className="nav-link">Dive Spots</Link>
+            <Link to="/forum" className="nav-link">Community</Link>
             <a href="#about" className="nav-link">About</a>
           </nav>
+          
+          {/* User Auth Section */}
+          <div className="auth-section">
+            {isLoading ? (
+              <div className="auth-loading">Loading...</div>
+            ) : isLoggedIn ? (
+              <div className="user-menu-container">
+                <button 
+                  className="user-menu-btn"
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                >
+                  {user?.avatarUrl ? (
+                    <img
+                      src={user.avatarUrl}
+                      alt=""
+                      className="user-avatar-thumb"
+                    />
+                  ) : (
+                    <span className="user-icon">👤</span>
+                  )}
+                  <span>{user?.username || user?.email}</span>
+                </button>
+                
+                {showUserMenu && (
+                  <div className="user-menu-dropdown">
+                    <div className="user-info">
+                      <p className="user-email">{user?.email}</p>
+                    </div>
+                    <Link
+                      to="/profile"
+                      className="profile-menu-link"
+                      onClick={() => setShowUserMenu(false)}
+                    >
+                      Profile & avatar
+                    </Link>
+                    <button 
+                      className="logout-btn"
+                      onClick={handleLogout}
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="auth-links">
+                <Link to="/login" className="auth-link login-link">Login</Link>
+                <Link to="/register" className="auth-link register-link">Register</Link>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -39,7 +126,7 @@ export function Layout({ children }: LayoutProps) {
             <ul>
               <li><a href="#tide">Tide Alerts</a></li>
               <li><a href="#weather">Weather</a></li>
-              <li><a href="#spots">Dive Spots</a></li>
+              <a href="/">Dive Spots</a>
             </ul>
           </div>
           <div className="footer-section">
@@ -52,6 +139,8 @@ export function Layout({ children }: LayoutProps) {
           <p>&copy; 2026 SmartDive. All rights reserved.</p>
         </div>
       </footer>
+
+      <ChatAssistant />
     </div>
   );
 }

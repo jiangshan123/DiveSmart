@@ -6,6 +6,7 @@ const visibilityService = require("./visibility-service.js");
 const cacheManager = require("./cache-manager.js");
 const authService = require("./auth-service.js");
 const diveSpotAdapter = require("./divespot-adapter.js");
+const geminiChatService = require("./gemini-chat-service.js");
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -186,6 +187,19 @@ app.get("/api/dive-spots/:id", async (req, res) => {
     respondSuccess(res, diveSpotAdapter.toApiDiveSpot(spot));
   } catch (err) {
     respondError(res, err, 500);
+  }
+});
+
+// ===== Gemini chat (text) =====
+
+app.post("/api/chat", async (req, res) => {
+  try {
+    const { messages } = req.body || {};
+    const text = await geminiChatService.generateChatReply(messages);
+    respondSuccess(res, { reply: text });
+  } catch (err) {
+    const code = err.statusCode || 500;
+    respondError(res, err, code);
   }
 });
 

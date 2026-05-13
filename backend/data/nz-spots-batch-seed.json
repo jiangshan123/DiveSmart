@@ -1,0 +1,513 @@
+[
+  {
+    "name": "White Island (Whakaari)",
+    "region": "Bay of Plenty",
+    "latitude": -37.526,
+    "longitude": 177.183,
+    "description": "Offshore active volcanic island with boat-only access; conditions change quickly.",
+    "difficulty_level": "Advanced",
+    "depth_max_meters": 35,
+    "suitable_for": [
+      "Scuba",
+      "Freediving"
+    ],
+    "getting_there": "Boat charter from Whakatane marina. Approximate boat ride: 1.5-2 hours each way.",
+    "parking_location": "Whakatane marina parking area.",
+    "boat_required": "yes",
+    "parking_to_entry_walk": "5-10 minutes to marina boarding area.",
+    "access_notes": "Offshore volcanic island dive site with changing conditions. Commercial boat access only.",
+    "banner_image_urls": [
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/1.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/2.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/3.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/4.jpg"
+    ]
+  },
+  {
+    "name": "Tui Wreck",
+    "region": "Northland",
+    "latitude": -35.585,
+    "longitude": 174.548,
+    "description": "Frigate wreck near Tutukaka; popular advanced boat dive.",
+    "difficulty_level": "Advanced",
+    "depth_max_meters": 32,
+    "suitable_for": [
+      "Scuba",
+      "Freediving"
+    ],
+    "getting_there": "Boat access from Tutukaka or Bay of Islands. Approximate boat ride: 30-50 minutes.",
+    "parking_location": "Tutukaka marina parking.",
+    "boat_required": "yes",
+    "parking_to_entry_walk": "5 minutes to charter dock.",
+    "access_notes": "Popular wreck dive with moderate currents and abundant marine life.",
+    "banner_image_urls": [
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/1.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/2.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/3.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/4.jpg"
+    ]
+  },
+  {
+    "name": "Ti Point",
+    "region": "Auckland",
+    "latitude": -36.037,
+    "longitude": 174.792,
+    "description": "Shore-access site north of Auckland; good for mixed snorkel and dive days.",
+    "difficulty_level": "Intermediate",
+    "depth_max_meters": 18,
+    "suitable_for": [
+      "Snorkeling",
+      "Freediving",
+      "Scuba"
+    ],
+    "getting_there": "Drive north from Auckland via Leigh Road. Shore entry site with no boat required.",
+    "parking_location": "Roadside parking near Ti Point Wharf.",
+    "boat_required": "no",
+    "parking_to_entry_walk": "2-5 minutes.",
+    "access_notes": "Easy shore entry with calm conditions during suitable tides.",
+    "banner_image_urls": [
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/1.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/2.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/3.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/4.jpg"
+    ]
+  },
+  {
+    "name": "The Mikhail Lermontov Wreck",
+    "region": "Marlborough",
+    "latitude": -41.105,
+    "longitude": 174.03,
+    "description": "Large cruise ship wreck in the Marlborough Sounds; deep and exposed to current.",
+    "difficulty_level": "Advanced",
+    "depth_max_meters": 38,
+    "suitable_for": [
+      "Scuba"
+    ],
+    "getting_there": "Boat charter from Picton. Approximate boat ride: 45-60 minutes.",
+    "parking_location": "Picton marina parking.",
+    "boat_required": "yes",
+    "parking_to_entry_walk": "5-10 minutes.",
+    "access_notes": "Advanced deep wreck dive with possible strong currents.",
+    "banner_image_urls": [
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/1.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/2.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/3.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/4.jpg"
+    ]
+  },
+  {
+    "name": "Sugar Loaf Islands",
+    "region": "Taranaki",
+    "latitude": -39.059,
+    "longitude": 174.995,
+    "description": "Volcanic islets off New Plymouth; boat access and pelagic fish.",
+    "difficulty_level": "Intermediate",
+    "depth_max_meters": 28,
+    "suitable_for": [
+      "Freediving",
+      "Scuba",
+      "Spearfishing"
+    ],
+    "getting_there": "Boat launch from New Plymouth. Approximate boat ride: 20-40 minutes depending on conditions.",
+    "parking_location": "Port Taranaki boat ramp parking.",
+    "boat_required": "yes",
+    "parking_to_entry_walk": "5 minutes.",
+    "access_notes": "Good visibility in calm weather and popular for pelagic fish.",
+    "banner_image_urls": [
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/1.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/2.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/3.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/4.jpg"
+    ]
+  },
+  {
+    "name": "Rainbow Warrior Wreck",
+    "region": "Northland",
+    "latitude": -35.183,
+    "longitude": 174.211,
+    "description": "Historic Greenpeace vessel sunk as an artificial reef near Matauri Bay.",
+    "difficulty_level": "Intermediate",
+    "depth_max_meters": 27,
+    "suitable_for": [
+      "Scuba"
+    ],
+    "getting_there": "Boat charter from Matauri Bay. Approximate boat ride: 25-35 minutes.",
+    "parking_location": "Matauri Bay parking area.",
+    "boat_required": "yes",
+    "parking_to_entry_walk": "10 minutes.",
+    "access_notes": "Historic wreck dive suitable for intermediate to advanced divers.",
+    "banner_image_urls": [
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/1.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/2.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/3.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/4.jpg"
+    ]
+  },
+  {
+    "name": "Poor Knights - Blue Maomao Arch",
+    "region": "Northland",
+    "latitude": -35.456,
+    "longitude": 174.729,
+    "description": "Iconic arch and schooling fish in the Poor Knights Marine Reserve.",
+    "difficulty_level": "Intermediate",
+    "depth_max_meters": 30,
+    "suitable_for": [
+      "Snorkeling",
+      "Freediving",
+      "Scuba"
+    ],
+    "getting_there": "Boat charter from Tutukaka marina. Approximate boat ride: 45 minutes to 1 hour.",
+    "parking_location": "Tutukaka marina parking.",
+    "boat_required": "yes",
+    "parking_to_entry_walk": "5 minutes.",
+    "access_notes": "World-famous marine reserve with caves, arches and schooling fish.",
+    "banner_image_urls": [
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/1.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/2.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/3.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/4.jpg"
+    ]
+  },
+  {
+    "name": "Piha Beach",
+    "region": "Auckland",
+    "latitude": -36.954,
+    "longitude": 174.472,
+    "description": "West Coast beach break; shore entry only for experienced water users in calm windows.",
+    "difficulty_level": "Advanced",
+    "depth_max_meters": 15,
+    "suitable_for": [
+      "Freediving"
+    ],
+    "getting_there": "Drive west from Auckland via Scenic Drive. Shore entry with no boat required.",
+    "parking_location": "Piha Surf Club parking.",
+    "boat_required": "no",
+    "parking_to_entry_walk": "2 minutes.",
+    "access_notes": "Strong surf and currents. Suitable only in calm conditions and for experienced water users.",
+    "banner_image_urls": [
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/1.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/2.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/3.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/4.jpg"
+    ]
+  },
+  {
+    "name": "Milford Sound - Black Coral",
+    "region": "Fiordland",
+    "latitude": -44.671,
+    "longitude": 167.927,
+    "description": "Fiord wall dive known for black coral layers and low-light diving.",
+    "difficulty_level": "Advanced",
+    "depth_max_meters": 40,
+    "suitable_for": [
+      "Scuba"
+    ],
+    "getting_there": "Boat charter from Milford marina. Approximate boat ride: 20-40 minutes.",
+    "parking_location": "Milford marina parking.",
+    "boat_required": "yes",
+    "parking_to_entry_walk": "5 minutes.",
+    "access_notes": "Cold-water fiord dive known for black coral and dramatic underwater walls.",
+    "banner_image_urls": [
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/1.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/2.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/3.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/4.jpg"
+    ]
+  },
+  {
+    "name": "Mercury Islands - Never Fail Rock",
+    "region": "Coromandel",
+    "latitude": -36.673,
+    "longitude": 175.889,
+    "description": "Offshore Mercury group; reef structure and fish life on settled days.",
+    "difficulty_level": "Intermediate",
+    "depth_max_meters": 28,
+    "suitable_for": [
+      "Freediving",
+      "Scuba",
+      "Spearfishing"
+    ],
+    "getting_there": "Boat access from Whitianga. Approximate boat ride: 45-70 minutes.",
+    "parking_location": "Whitianga marina parking.",
+    "boat_required": "yes",
+    "parking_to_entry_walk": "5 minutes.",
+    "access_notes": "Excellent reef structure and fish life. Best in settled weather.",
+    "banner_image_urls": [
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/1.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/2.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/3.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/4.jpg"
+    ]
+  },
+  {
+    "name": "Mayor Island (Tuhua)",
+    "region": "Bay of Plenty",
+    "latitude": -37.284,
+    "longitude": 176.25,
+    "description": "Remote volcanic island offshore from Tauranga; long boat trip, clear water.",
+    "difficulty_level": "Intermediate",
+    "depth_max_meters": 35,
+    "suitable_for": [
+      "Freediving",
+      "Scuba",
+      "Spearfishing"
+    ],
+    "getting_there": "Boat charter from Tauranga. Approximate boat ride: 1.5-2.5 hours.",
+    "parking_location": "Tauranga marina parking.",
+    "boat_required": "yes",
+    "parking_to_entry_walk": "5-10 minutes.",
+    "access_notes": "Remote offshore island with clear water and volcanic underwater terrain.",
+    "banner_image_urls": [
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/1.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/2.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/3.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/4.jpg"
+    ]
+  },
+  {
+    "name": "Kapiti Island Marine Reserve",
+    "region": "Wellington",
+    "latitude": -40.863,
+    "longitude": 174.919,
+    "description": "Island marine reserve west of the Kāpiti Coast; boat access and protected reefs.",
+    "difficulty_level": "Intermediate",
+    "depth_max_meters": 22,
+    "suitable_for": [
+      "Snorkeling",
+      "Freediving",
+      "Scuba"
+    ],
+    "getting_there": "Boat from Paraparaumu Beach. Approximate boat ride: 15-25 minutes.",
+    "parking_location": "Paraparaumu beach parking.",
+    "boat_required": "yes",
+    "parking_to_entry_walk": "5 minutes.",
+    "access_notes": "Protected marine reserve with healthy reef systems and marine biodiversity.",
+    "banner_image_urls": [
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/1.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/2.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/3.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/4.jpg"
+    ]
+  },
+  {
+    "name": "Kaikoura Peninsula",
+    "region": "Canterbury",
+    "latitude": -42.425,
+    "longitude": 173.708,
+    "description": "Peninsula reefs and kelp; seals and shore or short boat options.",
+    "difficulty_level": "Intermediate",
+    "depth_max_meters": 20,
+    "suitable_for": [
+      "Snorkeling",
+      "Freediving",
+      "Scuba"
+    ],
+    "getting_there": "Drive to Kaikoura Peninsula coastal area. Optional short boat charters available: 10-20 minutes.",
+    "parking_location": "Point Kean parking area.",
+    "boat_required": "optional",
+    "parking_to_entry_walk": "2-10 minutes.",
+    "access_notes": "Popular for seals, kelp forests and crayfish diving.",
+    "banner_image_urls": [
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/1.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/2.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/3.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/4.jpg"
+    ]
+  },
+  {
+    "name": "HMNZS Canterbury Wreck",
+    "region": "Northland",
+    "latitude": -35.173,
+    "longitude": 174.293,
+    "description": "Purpose-sunk frigate in the Bay of Islands; large wreck with swim-throughs.",
+    "difficulty_level": "Advanced",
+    "depth_max_meters": 33,
+    "suitable_for": [
+      "Scuba"
+    ],
+    "getting_there": "Boat charter from Deep Water Cove. Approximate boat ride: 15-25 minutes.",
+    "parking_location": "Bay of Islands marina parking.",
+    "boat_required": "yes",
+    "parking_to_entry_walk": "5 minutes.",
+    "access_notes": "Purpose-sunk frigate wreck designed specifically for recreational diving.",
+    "banner_image_urls": [
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/1.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/2.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/3.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/4.jpg"
+    ]
+  },
+  {
+    "name": "Hen and Chicken Islands",
+    "region": "Northland",
+    "latitude": -36.185,
+    "longitude": 174.715,
+    "description": "Offshore group east of Whangārei Heads; varied reef and fish life.",
+    "difficulty_level": "Intermediate",
+    "depth_max_meters": 28,
+    "suitable_for": [
+      "Freediving",
+      "Scuba",
+      "Spearfishing"
+    ],
+    "getting_there": "Boat access from Whangarei Heads. Approximate boat ride: 40-60 minutes.",
+    "parking_location": "Whangarei boat ramp parking.",
+    "boat_required": "yes",
+    "parking_to_entry_walk": "5 minutes.",
+    "access_notes": "Excellent offshore reefs with strong marine biodiversity.",
+    "banner_image_urls": [
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/1.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/2.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/3.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/4.jpg"
+    ]
+  },
+  {
+    "name": "Great Barrier Island - Arid Island",
+    "region": "Auckland",
+    "latitude": -36.248,
+    "longitude": 175.538,
+    "description": "Remote site off Great Barrier; boat required from local ramps.",
+    "difficulty_level": "Intermediate",
+    "depth_max_meters": 28,
+    "suitable_for": [
+      "Freediving",
+      "Scuba",
+      "Spearfishing"
+    ],
+    "getting_there": "Boat access from Great Barrier Island. Approximate boat ride: 30-50 minutes.",
+    "parking_location": "Tryphena Wharf parking.",
+    "boat_required": "yes",
+    "parking_to_entry_walk": "5 minutes.",
+    "access_notes": "Remote island diving with good visibility during calm weather.",
+    "banner_image_urls": [
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/1.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/2.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/3.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/4.jpg"
+    ]
+  },
+  {
+    "name": "Goat Island Marine Reserve",
+    "region": "Auckland",
+    "latitude": -36.269,
+    "longitude": 174.798,
+    "description": "New Zealand’s first marine reserve; easy shore entry at Leigh.",
+    "difficulty_level": "Beginner",
+    "depth_max_meters": 12,
+    "suitable_for": [
+      "Snorkeling",
+      "Freediving",
+      "Scuba"
+    ],
+    "getting_there": "Drive to Leigh via SH1 and Goat Island Road. Shore entry with no boat required.",
+    "parking_location": "Goat Island reserve car park.",
+    "boat_required": "no",
+    "parking_to_entry_walk": "2-5 minutes.",
+    "access_notes": "Beginner-friendly marine reserve with easy shore access and abundant fish life.",
+    "banner_image_urls": [
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/1.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/2.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/3.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/4.jpg"
+    ]
+  },
+  {
+    "name": "Fiordland - Deep Cove",
+    "region": "Fiordland",
+    "latitude": -45.457,
+    "longitude": 166.794,
+    "description": "Remote Doubtful Sound area diving; cold fiord walls and limited access.",
+    "difficulty_level": "Advanced",
+    "depth_max_meters": 35,
+    "suitable_for": [
+      "Scuba"
+    ],
+    "getting_there": "Boat access within Fiordland from Manapouri or Doubtful Sound tours. Approximate boat ride: 1-2 hours.",
+    "parking_location": "Manapouri marina parking.",
+    "boat_required": "yes",
+    "parking_to_entry_walk": "5-10 minutes.",
+    "access_notes": "Remote cold-water fiord diving with dramatic underwater cliffs and deep visibility.",
+    "banner_image_urls": [
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/1.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/2.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/3.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/4.jpg"
+    ]
+  },
+  {
+    "name": "Cavalli Islands",
+    "region": "Northland",
+    "latitude": -34.968,
+    "longitude": 173.925,
+    "description": "Island group north of the Bay of Islands; caves and drop-offs.",
+    "difficulty_level": "Intermediate",
+    "depth_max_meters": 30,
+    "suitable_for": [
+      "Freediving",
+      "Scuba",
+      "Spearfishing"
+    ],
+    "getting_there": "Boat launch from Matauri Bay. Approximate boat ride: 20-40 minutes.",
+    "parking_location": "Matauri Bay parking.",
+    "boat_required": "yes",
+    "parking_to_entry_walk": "5 minutes.",
+    "access_notes": "Good reef diving with caves, drop-offs and healthy marine life.",
+    "banner_image_urls": [
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/1.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/2.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/3.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/4.jpg"
+    ]
+  },
+  {
+    "name": "Aramoana Mole",
+    "region": "Otago",
+    "latitude": -45.778,
+    "longitude": 170.709,
+    "description": "Mole and channel shore dive near Dunedin; seals and macro subjects.",
+    "difficulty_level": "Intermediate",
+    "depth_max_meters": 14,
+    "suitable_for": [
+      "Snorkeling",
+      "Freediving",
+      "Scuba"
+    ],
+    "getting_there": "Drive to Aramoana near Dunedin. Shore entry with no boat required.",
+    "parking_location": "Aramoana Mole roadside parking.",
+    "boat_required": "no",
+    "parking_to_entry_walk": "2 minutes.",
+    "access_notes": "Popular shore dive known for seals, macro life and underwater photography.",
+    "banner_image_urls": [
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/1.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/2.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/3.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/4.jpg"
+    ]
+  },
+  {
+    "name": "Alderman Islands",
+    "region": "Coromandel",
+    "latitude": -36.968,
+    "longitude": 175.883,
+    "description": "Offshore Coromandel group; pelagics and cave terrain on good days.",
+    "difficulty_level": "Intermediate",
+    "depth_max_meters": 28,
+    "suitable_for": [
+      "Freediving",
+      "Scuba",
+      "Spearfishing"
+    ],
+    "getting_there": "Boat access from Tairua or Whangamata. Approximate boat ride: 45-75 minutes.",
+    "parking_location": "Tairua marina parking.",
+    "boat_required": "yes",
+    "parking_to_entry_walk": "5 minutes.",
+    "access_notes": "Offshore island group with caves, reefs and large pelagic fish species.",
+    "banner_image_urls": [
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/1.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/2.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/3.jpg",
+      "https://divingspotbanner.s3.us-east-1.amazonaws.com/4.jpg"
+    ]
+  }
+]

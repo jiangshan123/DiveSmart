@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
+import { useMemo, useState, useRef, useEffect, useCallback, useId } from 'react';
 
 interface TideCurveProps {
   data: unknown;
@@ -110,6 +110,17 @@ function smoothPathD(
   return d;
 }
 
+/** Closed path from chart baseline up along the tide curve and back (area fill under line). */
+function tideAreaFillPathD(curveD: string, bottomY: number, xRight: number): string {
+  if (!curveD) return '';
+  const m = curveD.match(/^M\s+([\d.+-eE]+)\s+([\d.+-eE]+)([\s\S]*)$/);
+  if (!m) return '';
+  const x0 = m[1];
+  const y0 = m[2];
+  const rest = m[3];
+  return `M ${x0} ${bottomY} L ${x0} ${y0}${rest} L ${xRight} ${bottomY} Z`;
+}
+
 /** Indices of global max / min height among samples in the visible window. */
 function sampleMinMaxIndices(points: TidePoint[]): { maxIdx: number; minIdx: number } | null {
   if (points.length === 0) return null;
@@ -164,6 +175,8 @@ function buildModel(data: unknown): TideModel | null {
 
 export function TideCurve({ data, displayTimeZone = DEFAULT_TZ }: TideCurveProps) {
   const tz = displayTimeZone;
+  const seaGradId = useId().replace(/:/g, '');
+  const tideAreaFillGradId = useId().replace(/:/g, '');
   const wrapRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(720);
 
@@ -269,6 +282,8 @@ export function TideCurve({ data, displayTimeZone = DEFAULT_TZ }: TideCurveProps
   const yScale = (h: number) => PAD.top + innerH - ((h - y0) / (y1 - y0)) * innerH;
 
   const curveD = smoothPathD(seriesView, xScale, yScale);
+  const chartBaselineY = CHART_H - PAD.bottom;
+  const areaFillD = tideAreaFillPathD(curveD, chartBaselineY, xScale(t1));
   const minMaxIdx = sampleMinMaxIndices(seriesView);
 
   const nowMs = Date.now();
@@ -339,8 +354,31 @@ export function TideCurve({ data, displayTimeZone = DEFAULT_TZ }: TideCurveProps
         onMouseMove={onSvgMove}
         onMouseLeave={onSvgLeave}
       >
-        <rect x={0} y={0} width={width} height={CHART_H} fill="#fafafa" />
-        <text x={PAD.left} y={14} fill="#666" fontSize={11}>
+        <defs>
+          <linearGradient id={seaGradId} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#f6fcff" />
+            <stop offset="40%" stopColor="#e8f5fc" />
+            <stop offset="100%" stopColor="#cfe8f5" />
+          </linearGradient>
+          <linearGradient id={tideAreaFillGradId} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#69c0ff" stopOpacity={0.42} />
+            <stop offset="55%" stopColor="#91d5ff" stopOpacity={0.28} />
+            <stop offset="100%" stopColor="#bae7ff" stopOpacity={0.14} />
+          </linearGradient>
+        </defs>
+        <rect x={0} y={0} width={width} height={CHART_H} fill={`url(#${seaGradId})`} />
+        {/* Soft wave band along the very bottom (under time labels, decorative) */}
+        <path
+          d={`M 0 ${CHART_H} L 0 ${CHART_H - 14} ${Array.from({ length: Math.ceil(width / 14) + 1 }, (_, i) => {
+            const x = Math.min(i * 14, width);
+            const y = CHART_H - 14 + Math.sin(i * 0.55 + 0.3) * 6;
+            return `L ${x} ${y.toFixed(1)}`;
+          }).join(' ')} L ${width} ${CHART_H} Z`}
+          fill="rgba(100, 175, 215, 0.18)"
+          pointerEvents="none"
+          aria-hidden="true"
+        />
+        <text x={PAD.left} y={14} fill="#5a7a8c" fontSize={11}>
           Tide (smooth curve through samples; red/blue = forecast max/min)
         </text>
 
@@ -348,8 +386,15 @@ export function TideCurve({ data, displayTimeZone = DEFAULT_TZ }: TideCurveProps
           const y = yScale(yv);
           return (
             <g key={i}>
-              <line x1={PAD.left} x2={width - PAD.right} y1={y} y2={y} stroke="#eee" strokeDasharray="4 4" />
-              <text x={PAD.left - 6} y={y + 4} textAnchor="end" fill="#999" fontSize={10}>
+              <line
+                x1={PAD.left}
+                x2={width - PAD.right}
+                y1={y}
+                y2={y}
+                stroke="rgba(100, 150, 190, 0.22)"
+                strokeDasharray="4 4"
+              />
+              <text x={PAD.left - 6} y={y + 4} textAnchor="end" fill="#6b8aa0" fontSize={10}>
                 {yv.toFixed(2)}
               </text>
             </g>
@@ -360,13 +405,29 @@ export function TideCurve({ data, displayTimeZone = DEFAULT_TZ }: TideCurveProps
           const x = xScale(tv);
           return (
             <g key={i}>
-              <line x1={x} x2={x} y1={PAD.top} y2={CHART_H - PAD.bottom} stroke="#f0f0f0" />
-              <text x={x} y={CHART_H - PAD.bottom + 22} textAnchor="middle" fill="#999" fontSize={10}>
+              <line
+                x1={x}
+                x2={x}
+                y1={PAD.top}
+                y2={CHART_H - PAD.bottom}
+                stroke="rgba(130, 175, 210, 0.2)"
+              />
+              <text x={x} y={CHART_H - PAD.bottom + 22} textAnchor="middle" fill="#6b8aa0" fontSize={10}>
                 {fmtNz(tv, tz, true)}
               </text>
             </g>
           );
         })}
+
+        {areaFillD ? (
+          <path
+            d={areaFillD}
+            fill={`url(#${tideAreaFillGradId})`}
+            stroke="none"
+            pointerEvents="none"
+            aria-hidden="true"
+          />
+        ) : null}
 
         <path d={curveD} fill="none" stroke="#1890ff" strokeWidth={2.2} strokeLinejoin="round" />
 
@@ -449,14 +510,14 @@ export function TideCurve({ data, displayTimeZone = DEFAULT_TZ }: TideCurveProps
           x={width / 2}
           y={CHART_H - 6}
           textAnchor="middle"
-          fill="#bbb"
+          fill="#7a9aad"
           fontSize={10}
         >
           X: {tz} · Y: m ({meta.datum ?? 'API'})
         </text>
       </svg>
 
-      <p style={{ margin: '12px 0 0', fontSize: 11, color: '#999', textAlign: 'center', lineHeight: 1.5 }}>
+      <p style={{ margin: '12px 0 0', fontSize: 11, color: '#6b8aa0', textAlign: 'center', lineHeight: 1.5 }}>
         {seriesView.length} samples · ~{spanHours < 72 ? spanHours.toFixed(1) : Math.round(spanHours)}h span · {tz}
       </p>
     </div>
