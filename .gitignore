@@ -1,2 +1,4 @@
 .env
 backend/uploads/
+.tfstate
+terraform.tfvars
