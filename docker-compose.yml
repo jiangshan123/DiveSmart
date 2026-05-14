@@ -1,6 +1,7 @@
 services:
   backend:
     build: ./backend
+    dockerfile: dockerfile
     container_name: smartdive-backend
     # 必须与 .env 中 PORT 一致（默认 8080）；映射错会导致浏览器访问 localhost:8080 连接被拒绝
     ports:
@@ -13,6 +14,7 @@ services:
 
   frontend:
     build: ./frontend
+    dockerfile: dockerfile
     container_name: smartdive-frontend
     ports:
       - "5173:5173"
