@@ -1,1 +1,6 @@
 .env
+backend/uploads/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+terraform/.terraform/
