@@ -10,12 +10,14 @@ services:
     volumes:
       - ./backend:/app
       - /app/node_modules
+      - ./.env:/app/.env:ro
 
   frontend:
     build: ./frontend
     container_name: smartdive-frontend
     ports:
-      - "5173:5173"
+      # 宿主机 3000：避免 Windows 保留端口段内绑定 5173；容器内 Vite 监听 5173
+      - "3000:5173"
     depends_on:
       - backend
     volumes:
