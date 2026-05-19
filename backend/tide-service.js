@@ -83,11 +83,18 @@ async function getTideForecast(lat, long, apiKey) {
   // Fetch from NIWA API
   try {
     console.log(`[Tide] Fetching from NIWA API for ${cacheKey}...`);
+    const params = {
+      lat: lat,
+      long: long,
+      numberOfDays: 3,
+    };
+    // Optional: set NIWA_TIDE_DATUM=MSL|CD|... — forcing MSL vs API default changes absolute heights vs some printed tables
+    if (process.env.NIWA_TIDE_DATUM) {
+      params.datum = process.env.NIWA_TIDE_DATUM;
+    }
+
     const response = await axios.get(`${NIWA_API_BASE}/data`, {
-      params: {
-        lat: lat,
-        long: long, // NIWA API parameter name is 'long'
-      },
+      params,
       headers: {
         "x-apikey": apiKey,
         "Accept-Encoding": "gzip, deflate", // Exclude Brotli (br) encoding

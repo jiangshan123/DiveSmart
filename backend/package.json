@@ -8,18 +8,35 @@
     "dev": "nodemon server.js",
     "test": "node test-db.js",
     "test:db": "node test-db.js",
-    "test:api": "node test-api.js"
+    "test:api": "node test-api.js",
+    "test:auth": "node test-auth.js",
+    "test:dynamodb": "node test-dynamodb-connection.js",
+    "test:auth-dynamodb": "node test-auth-dynamodb.js",
+    "test:cache": "node test-cache-manager.js",
+    "init:dynamodb": "node dynamodb-init-all.js",
+    "migrate": "node migrate-to-dynamodb.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.1043.0",
+    "@aws-sdk/client-s3": "^3.1045.0",
+    "@aws-sdk/lib-dynamodb": "^3.1043.0",
+    "@aws-sdk/s3-request-presigner": "^3.1045.0",
+    "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.45.4",
+    "aws-jwt-verify": "^5.1.1",
     "axios": "^1.13.6",
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
-    "nodemon": "^3.1.14",
+    "jsonwebtoken": "^9.0.3",
+    "nodemailer": "^8.0.7",
     "pg": "^8.20.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
   }
 }

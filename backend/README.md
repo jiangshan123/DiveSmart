@@ -87,27 +87,27 @@ CREATE TABLE dive_spots (
 4. Create detailed dive spot view
 5. Add search functionality by name/region
 
-现在缓存是删除之前的，然后重启get
-创建了后端接口调用外部api
-当前天气：19.2°C，西南风 5.5m/s，云量 28%
-潮汐：从高潮 2.17m 到低潮 0.31m 的完整周期
-缓存有效期：24 小时
-GET /api/conditions?spotId=1 # 获取整合数据
-POST /api/admin/cache/refresh-all # 手动刷新缓存
-GET /api/admin/cache/info # 查看缓存统计
-今日完成：
+Cache should be cleared before restart and then fetched again.
+Backend endpoints were added to call external APIs.
+Current weather: 19.2 C, southwest wind 5.5 m/s, cloud cover 28%.
+Tide cycle: full cycle from high tide 2.17 m to low tide 0.31 m.
+Cache TTL: 24 hours.
+GET /api/conditions?spotId=1 # Get aggregated conditions data
+POST /api/admin/cache/refresh-all # Manually refresh cache
+GET /api/admin/cache/info # View cache statistics
+Completed today:
 
-- ✅ NIWA API 调试完成
-- ✅ MeteoSource API 调试完成
-- ✅ 缓存系统验证（20/20 成功）
+- ✅ NIWA API debugging completed
+- ✅ MeteoSource API debugging completed
+- ✅ Cache system validated (20/20 successful)
 
-遇到的问题：
+Issues encountered:
 
-- DNS 无法解析 api.meteosource.com（已解决：改为 www.meteosource.com）
-- 天气数据解析失败（已解决：response.data.hourly?.data）
+- DNS could not resolve api.meteosource.com (fixed by switching to www.meteosource.com)
+- Weather payload parsing failed (fixed with response.data.hourly?.data)
 
-下一步计划：
+Next steps:
 
-- 开始前端 React 组件开发
-- 实现 DiveSpotList 组件
-- 实现 TideChart 组件
+- Start frontend React component development
+- Implement DiveSpotList component
+- Implement TideChart component

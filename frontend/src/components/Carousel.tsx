@@ -91,11 +91,11 @@ export function Carousel({ slides, autoPlayInterval = 5000 }: CarouselProps) {
         </button>
 
         <div className="carousel-dots">
-          {slides.map((_, index) => (
+          {slides.map((slide) => (
             <button
-              key={index}
-              className={`dot ${index === currentIndex ? 'active' : ''}`}
-              onClick={() => goToSlide(index)}
+              key={slide.id}
+              className={`dot ${slides.indexOf(slide) === currentIndex ? 'active' : ''}`}
+              onClick={() => goToSlide(slides.indexOf(slide))}
             />
           ))}
         </div>

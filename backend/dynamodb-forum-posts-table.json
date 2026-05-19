@@ -1,0 +1,16 @@
+{
+  "TableName": "smartdive-forum-posts",
+  "AttributeDefinitions": [
+    {
+      "AttributeName": "postId",
+      "AttributeType": "S"
+    }
+  ],
+  "KeySchema": [
+    {
+      "AttributeName": "postId",
+      "KeyType": "HASH"
+    }
+  ],
+  "BillingMode": "PAY_PER_REQUEST"
+}

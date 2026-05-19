@@ -6,6 +6,8 @@ import 'leaflet/dist/leaflet.css';
 import axios from 'axios';
 import { Carousel } from './Carousel';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
 // Fix Leaflet icon issue
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -15,14 +17,14 @@ L.Icon.Default.mergeOptions({
 });
 
 interface DiveSpot {
-  id: number;
+  spotId: number;
   name: string;
   region: string;
   latitude: number;
   longitude: number;
-  difficulty_level: string;
-  depth_max_meters: number;
-  facing_direction: number;
+  difficulty_level: string | null;
+  depth_max_meters: number | null;
+  facing_direction: number | null;
   description: string;
 }
 
@@ -94,7 +96,7 @@ export function NZDiveMap() {
 
   const fetchDiveSpots = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/dive-spots');
+      const response = await axios.get(`${API_BASE}/api/dive-spots`);
       setDiveSpots(response.data.data.spots);
       setFilteredSpots(response.data.data.spots);
     } catch (error) {
@@ -103,8 +105,13 @@ export function NZDiveMap() {
   };
 
   const handleMarkerClick = (spot: DiveSpot) => {
-    navigate(`/detail/${spot.id}`);
+    navigate(`/detail/${spot.spotId}`);
   };
+
+  const depthLabel = (m: number | null | undefined) =>
+    m != null && !Number.isNaN(Number(m)) ? `${m}m` : null;
+
+  const notProvidedNote = { fontSize: 10, color: '#888', lineHeight: 1.35, marginTop: 2 } as const;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
@@ -200,7 +207,7 @@ export function NZDiveMap() {
 
               {filteredSpots.map((spot) => (
                 <Marker
-                  key={spot.id}
+                  key={spot.spotId}
                   position={[spot.latitude, spot.longitude]}
                   eventHandlers={{
                   click: () => handleMarkerClick(spot),
@@ -210,8 +217,24 @@ export function NZDiveMap() {
                   <div>
                     <h3 style={{ margin: '0 0 10px 0' }}>{spot.name}</h3>
                     <p style={{ margin: '5px 0' }}>Region: {spot.region}</p>
-                    <p style={{ margin: '5px 0' }}>Level: {spot.difficulty_level}</p>
-                    <p style={{ margin: '5px 0' }}>Max Depth: {spot.depth_max_meters}m</p>
+                    <p style={{ margin: '5px 0' }}>
+                      Level:{' '}
+                      {spot.difficulty_level ?? (
+                        <>
+                          <span style={{ color: '#666' }}>Not provided</span>
+                          <div style={notProvidedNote}>No difficulty saved in the database.</div>
+                        </>
+                      )}
+                    </p>
+                    <p style={{ margin: '5px 0' }}>
+                      Max Depth:{' '}
+                      {depthLabel(spot.depth_max_meters) ?? (
+                        <>
+                          <span style={{ color: '#666' }}>Not provided</span>
+                          <div style={notProvidedNote}>No max depth (m) saved in the database.</div>
+                        </>
+                      )}
+                    </p>
                     <button
                       onClick={() => handleMarkerClick(spot)}
                       style={{
@@ -247,7 +270,7 @@ export function NZDiveMap() {
                 <div style={{ padding: '10px' }}>
                   {filteredSpots.map((spot) => (
                     <div
-                      key={spot.id}
+                      key={spot.spotId}
                       onClick={() => handleMarkerClick(spot)}
                       style={{
                         padding: '12px',
@@ -271,11 +294,16 @@ export function NZDiveMap() {
                         {spot.name}
                       </p>
                       <p style={{ margin: '0 0 5px 0', fontSize: '12px', color: '#666' }}>
-                        {spot.region} • {spot.difficulty_level}
+                        {spot.region} • {spot.difficulty_level ?? 'Not provided'}
                       </p>
                       <p style={{ margin: 0, fontSize: '11px', color: '#999' }}>
-                        Depth: {spot.depth_max_meters}m
+                        Depth: {depthLabel(spot.depth_max_meters) ?? 'Not provided'}
                       </p>
+                      {(!spot.difficulty_level || depthLabel(spot.depth_max_meters) == null) && (
+                        <p style={{ margin: '6px 0 0', fontSize: 10, color: '#aaa', lineHeight: 1.35 }}>
+                          “Not provided” = missing in DB. Open details for full notes.
+                        </p>
+                      )}
                     </div>
                   ))}
                 </div>

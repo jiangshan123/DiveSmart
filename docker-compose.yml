@@ -18,9 +18,10 @@ services:
       dockerfile: dockerfile
     container_name: smartdive-frontend
     ports:
-      - "5173:5173"
+      - "3000:5173"
     depends_on:
       - backend
     volumes:
       - ./frontend:/app
       - /app/node_modules
+      - ./.env:/app/.env:ro

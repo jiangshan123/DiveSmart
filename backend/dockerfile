@@ -9,4 +9,8 @@ COPY . .
 ENV NODE_ENV=production
 EXPOSE 8080
 
+<<<<<<< HEAD
 CMD ["npm", "start"]
+=======
+CMD ["npm", "start"]
+>>>>>>> backup-before-clean
