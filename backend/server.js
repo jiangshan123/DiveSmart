@@ -7,6 +7,7 @@ const cacheManager = require("./cache-manager.js");
 const authService = require("./auth-service.js");
 const diveSpotAdapter = require("./divespot-adapter.js");
 const geminiChatService = require("./gemini-chat-service.js");
+const forumAdapter = require("./forum-adapter.js");
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -138,6 +139,34 @@ app.post("/api/auth/verify", (req, res) => {
     respondSuccess(res, { valid: true, user: decoded });
   } catch (err) {
     respondError(res, err);
+  }
+});
+
+// ===== Forum API =====
+
+app.get("/api/forum/posts", async (req, res) => {
+  try {
+    const posts = await forumAdapter.listPosts(req.query.limit);
+    respondSuccess(res, { posts });
+  } catch (err) {
+    respondError(res, err);
+  }
+});
+
+app.post("/api/forum/posts", authService.authMiddleware, async (req, res) => {
+  try {
+    const content = req.body?.content;
+    const post = await forumAdapter.createPost({
+      body: content,
+      authorUserId: req.user.id,
+      authorUsername: req.user.username,
+    });
+    respondSuccess(res, { post }, 201);
+  } catch (err) {
+    const message = err.message || String(err);
+    const status =
+      message.includes("required") || message.includes("too long") ? 400 : 500;
+    respondError(res, message, status);
   }
 });
 
